@@ -92,11 +92,17 @@ async function loadLogBatch() {
   logStatus.textContent = 'Loading recollections…';
   const batch = feedEntries.slice(nextLog, nextLog + 6);
   const cards = await Promise.all(batch.map(createLogCard));
+  if (nextLog > 0) {
+    cards.forEach((card, index) => {
+      card.classList.add('load-more-reveal');
+      card.style.setProperty('--reveal-delay', `${index * 100}ms`);
+    });
+  }
   logFeed.append(...cards);
   nextLog += batch.length;
   moreLogs.hidden = nextLog >= feedEntries.length;
   moreLogs.disabled = false;
-  logStatus.textContent = `Showing ${nextLog} of ${feedEntries.length} recollections, highest log number first.`;
+  logStatus.textContent = `Showing ${nextLog} of ${feedEntries.length} recollections.`;
 }
 (async () => {
   try {
