@@ -25,6 +25,8 @@
       if (context.state === 'suspended') context.resume().catch(() => {});
     } catch { /* Keep navigation working if audio is unavailable. */ }
   }
+  // Prepare audio immediately on browsers that already allow this site's sounds.
+  unlock();
   function play() {
     if (!enabled || context?.state !== 'running') return;
     // Leave the audio thread time to receive the complete envelope on phones.
@@ -54,12 +56,16 @@
     updateControl();
     if (enabled) unlock();
   });
-  document.addEventListener('pointerdown', unlock, { passive: true });
-  document.addEventListener('keydown', unlock);
+  // Capture gestures early; touch browsers may only activate audio on release.
+  document.addEventListener('pointerdown', unlock, { passive: true, capture: true });
+  document.addEventListener('pointerup', unlock, { passive: true, capture: true });
+  document.addEventListener('click', unlock, { capture: true });
+  document.addEventListener('keydown', unlock, { capture: true });
   document.addEventListener('pointerover', event => {
     if (event.pointerType === 'touch') return;
     const link = event.target.closest?.('a[href]');
     if (!link || (event.relatedTarget instanceof Node && link.contains(event.relatedTarget))) return;
+    unlock();
     const now = performance.now();
     if (now - lastHover < 90) return;
     lastHover = now;
