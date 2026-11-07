@@ -8,6 +8,15 @@ import sync_social as sync
 
 
 class SocialSyncTests(unittest.TestCase):
+    def test_instagram_login_endpoint_and_newest_first(self):
+        response = {'data': [
+            {'permalink': 'https://www.instagram.com/p/OLDER/', 'timestamp': '2026-11-01'},
+            {'permalink': 'https://www.instagram.com/reel/NEWER/?tracking=1', 'timestamp': '2026-11-07'},
+        ]}
+        with patch.dict('os.environ', {'INSTAGRAM_ACCESS_TOKEN': 'test-token', 'INSTAGRAM_USER_ID': '123', 'INSTAGRAM_API_VERSION': 'v25.0'}), patch.object(sync, 'api', return_value=response) as request:
+            self.assertEqual(sync.instagram(), ['https://www.instagram.com/reel/NEWER/', 'https://www.instagram.com/p/OLDER/'])
+            request.assert_called_once_with('https://graph.instagram.com/v25.0/123/media', {'fields': 'permalink,timestamp', 'limit': 100}, 'test-token')
+
     def test_instagram_preserves_archive_batches_and_layout(self):
         page = (sync.ROOT / 'art.html').read_text(encoding='utf-8')
         saved = re.findall(r'data-instgrm-permalink="([^"]+)"', page)
