@@ -109,6 +109,16 @@ def render_instagram(page, links):
             + join(cards[6:]) + page[match.start(5):])
 
 
+def render_latest_instagram(page, link):
+    if not re.fullmatch(r"https://www\.instagram\.com/(?:p|reel)/[\w-]+/?", link):
+        raise ValueError("Invalid Instagram permalink")
+    pattern = r'(<!-- latest-content:start -->\s*<a class="latest-item" href=")[^"]+("[^>]*>)'
+    updated, count = re.subn(pattern, lambda match: match[1] + link + match[2], page)
+    if count != 1:
+        raise ValueError("Latest content link missing")
+    return updated
+
+
 def main():
     failures = 0
     for name, filename, fetch, render in [
@@ -118,7 +128,14 @@ def main():
         try:
             path = ROOT / filename
             page = path.read_text(encoding="utf-8")
-            updated = render(page, fetch())
+            content = fetch()
+            updated = render(page, content)
+            homepage = ROOT / 'index.html'
+            if name == 'Instagram' and homepage.exists():
+                home = homepage.read_text(encoding='utf-8')
+                latest = render_latest_instagram(home, content[0])
+                if latest != home:
+                    homepage.write_text(latest, encoding='utf-8', newline='\n')
             if updated != page:
                 path.write_text(updated, encoding="utf-8", newline="\n")
             print(f"{name}: checked successfully")

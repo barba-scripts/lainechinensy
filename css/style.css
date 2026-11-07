@@ -1,5 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');
 :root{--bg:#121117;--panel:#1d1c23;--panel2:#292730;--gold:#c79b45;--silver:#ddd8e2;--muted:#b8b2bf;--lavender:#9982b7;--red:#b63d4e;--line:#6e5b47;--max:1240px}
+.sanctum-latest{background:#1d1c2366;border-bottom:1px solid var(--line)}
+.latest-inner{display:grid;grid-template-columns:.8fr repeat(3,1fr);align-items:center;padding-block:22px;gap:24px}
+.latest-inner h2{margin:0;font-size:.85rem;line-height:1.5;color:var(--gold)}
+.latest-inner h2 span{font-size:.65rem;letter-spacing:.09em}
+.latest-item{position:relative;display:flex;flex-direction:column;justify-content:center;min-width:0;min-height:56px;padding:4px 24px 4px 22px;border-left:1px solid var(--line)}
+.latest-kind{font: .6rem/1.5 'Cinzel',Georgia,serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.latest-item strong{font-size:1.1rem;font-weight:500;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.latest-arrow{position:absolute;right:0;top:50%;transform:translateY(-50%);font-size:1rem;color:var(--gold)}
+.latest-item:hover strong{color:#f3d69a}.latest-item:focus-visible{outline:2px solid var(--gold);outline-offset:5px}
+@media(max-width:800px){.latest-inner{grid-template-columns:1fr;gap:0;padding-block:16px}.latest-inner h2{margin-bottom:8px}.latest-inner h2 br{display:none}.latest-inner h2 span{margin-left:.4em}.latest-item{display:grid;grid-template-columns:110px minmax(0,1fr);gap:12px;align-items:center;border-left:0;border-top:1px solid #6e5b4755;padding:10px 24px 10px 0;min-height:48px}}
 .heretic-lich-artwork{display:block;width:100%;height:auto;margin-bottom:24px;border:1px solid var(--gold)}
 .about-invocation{margin:0}.about-lore-link{color:var(--gold);text-decoration:underline;text-underline-offset:.15em}
 .recollections-faq{margin-bottom:48px;padding-bottom:28px;border-bottom:1px solid var(--line)}.recollections-faq h3{margin-top:24px;color:var(--gold)}.recollections-faq a{color:var(--gold);text-decoration:underline;text-underline-offset:.15em}

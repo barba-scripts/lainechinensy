@@ -38,12 +38,12 @@ jobs:
         id: save
         shell: bash
         run: |
-          if git diff --quiet -- art.html gospel.html; then
+          if git diff --quiet -- index.html art.html gospel.html; then
             echo 'changed=false' >> "$GITHUB_OUTPUT"
           else
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add art.html gospel.html
+            git add index.html art.html gospel.html
             git commit -m 'Update social embeds'
             git push
             echo 'changed=true' >> "$GITHUB_OUTPUT"

@@ -32,6 +32,18 @@ class SocialSyncTests(unittest.TestCase):
                 sync.instagram()
             request.assert_not_called()
 
+    def test_latest_link_updates_without_changing_other_homepage_content(self):
+        page = (sync.ROOT / 'index.html').read_text(encoding='utf-8')
+        link = 'https://www.instagram.com/reel/NEWEST/'
+        updated = sync.render_latest_instagram(page, link)
+        self.assertIn('href="' + link + '"', updated)
+        self.assertEqual(updated.split('<!-- latest-content:start -->')[0], page.split('<!-- latest-content:start -->')[0])
+        self.assertEqual(updated.split('<!-- latest-content:end -->')[1], page.split('<!-- latest-content:end -->')[1])
+        self.assertIn('music.html#featured-album', updated)
+        self.assertEqual(sync.render_latest_instagram(updated, link), updated)
+        with self.assertRaises(ValueError):
+            sync.render_latest_instagram(page, 'javascript:alert(1)')
+
     def test_instagram_preserves_archive_batches_and_layout(self):
         page = (sync.ROOT / 'art.html').read_text(encoding='utf-8')
         saved = re.findall(r'data-instgrm-permalink="([^"]+)"', page)
