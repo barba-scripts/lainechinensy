@@ -46,11 +46,15 @@ One-time setup in [the repository settings](https://github.com/lainechinensy/lai
    - `YOUTUBE_API_KEY`: a Google Cloud API key with YouTube Data API v3 enabled.
      Restrict it to that API; browser referrer restrictions do not work for this runner.
    - `INSTAGRAM_USER_ID`: the numeric professional Instagram account ID, not the username.
-   - `INSTAGRAM_ACCESS_TOKEN`: a valid token for Meta's **Instagram API with Instagram
-     Login**, with `instagram_business_basic` permission to read the Creator/Business
-     account's media. No linked Facebook Page is required. Facebook Login tokens
-     do not work with this configuration. Use the numeric Instagram account ID
-     returned by the Instagram Login setup for `INSTAGRAM_USER_ID`.
+   - `INSTAGRAM_ACCESS_TOKEN`: the token generated for your professional Instagram
+     account. The workflow defaults to the Facebook Graph API for the Unified Login
+     system-user configuration used during setup. The token needs permission to
+     read that account's media (`instagram_basic` for the Facebook Login route).
+     Use the numeric Instagram account ID shown with the connected account.
+   - For a standalone Instagram Login token with `instagram_business_basic`, add
+     an Actions **variable** named `INSTAGRAM_LOGIN_MODE` with value `instagram`.
+     The default `facebook` mode uses `graph.facebook.com`; `instagram` uses
+     `graph.instagram.com`. Never place the token in an Actions variable.
 2. Under **Pages > Build and deployment**, choose **GitHub Actions** as the source.
    This workflow publishes the site for normal pushes as well as social updates.
 3. Allow Actions to write repository contents. If branch protection blocks bot

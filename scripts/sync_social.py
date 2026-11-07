@@ -55,8 +55,12 @@ def instagram():
         raise NotConfigured("INSTAGRAM_ACCESS_TOKEN or INSTAGRAM_USER_ID is missing")
     if not re.fullmatch(r"v\d+\.0", version):
         raise ValueError("Invalid INSTAGRAM_API_VERSION")
-    # Instagram Login: Creator/Business account; no linked Facebook Page needed.
-    items = api(f"https://graph.instagram.com/{version}/{user}/media", {
+    login = os.environ.get("INSTAGRAM_LOGIN_MODE", "instagram")
+    hosts = {"instagram": "graph.instagram.com", "facebook": "graph.facebook.com"}
+    if login not in hosts:
+        raise ValueError("Invalid INSTAGRAM_LOGIN_MODE")
+    # Unified Login system-user tokens use the Facebook Graph API host.
+    items = api(f"https://{hosts[login]}/{version}/{user}/media", {
         "fields": "permalink,timestamp", "limit": 100,
     }, token)["data"]
     items.sort(key=lambda item: item["timestamp"], reverse=True)

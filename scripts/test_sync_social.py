@@ -21,6 +21,17 @@ class SocialSyncTests(unittest.TestCase):
             self.assertEqual(sync.instagram(), ['https://www.instagram.com/reel/NEWER/', 'https://www.instagram.com/p/OLDER/'])
             request.assert_called_once_with('https://graph.instagram.com/v25.0/123/media', {'fields': 'permalink,timestamp', 'limit': 100}, 'test-token')
 
+    def test_unified_login_uses_facebook_graph(self):
+        with patch.dict('os.environ', {'INSTAGRAM_ACCESS_TOKEN': 'test-token', 'INSTAGRAM_USER_ID': '123', 'INSTAGRAM_API_VERSION': 'v25.0', 'INSTAGRAM_LOGIN_MODE': 'facebook'}), patch.object(sync, 'api', return_value={'data': []}) as request:
+            self.assertEqual(sync.instagram(), [])
+            request.assert_called_once_with('https://graph.facebook.com/v25.0/123/media', {'fields': 'permalink,timestamp', 'limit': 100}, 'test-token')
+
+    def test_invalid_login_mode_rejected_before_request(self):
+        with patch.dict('os.environ', {'INSTAGRAM_ACCESS_TOKEN': 'test-token', 'INSTAGRAM_USER_ID': '123', 'INSTAGRAM_LOGIN_MODE': 'example.com'}), patch.object(sync, 'api') as request:
+            with self.assertRaises(ValueError):
+                sync.instagram()
+            request.assert_not_called()
+
     def test_instagram_preserves_archive_batches_and_layout(self):
         page = (sync.ROOT / 'art.html').read_text(encoding='utf-8')
         saved = re.findall(r'data-instgrm-permalink="([^"]+)"', page)
