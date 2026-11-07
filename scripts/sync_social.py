@@ -155,23 +155,35 @@ def main():
         except NotConfigured:
             print(f"::warning::{name} is not configured yet; saved embeds retained.")
         except HTTPError as error:
-            # Only expose structured error codes, never URLs, tokens, or messages.
-            reason = "unknown"
-            meta_codes = ""
+            raw_body = error.read().decode(
+                "utf-8",
+                errors="replace"
+            )
+
+            token = os.environ.get("INSTAGRAM_ACCESS_TOKEN")
+            if token:
+                raw_body = raw_body.replace(token, "[REDACTED]")
+
             try:
-                details = json.load(error).get('error', {})
-                # Meta returns numeric codes instead of Google's errors[].reason.
-                # Keep messages and request URLs private: both can contain secrets.
-                for field in ('code', 'error_subcode'):
-                    value = details.get(field)
-                    if type(value) is int:
-                        meta_codes += f", {field}={value}"
-                reason = details.get('errors', [{}])[0].get('reason', 'unknown')
-                if not re.fullmatch(r'[A-Za-z0-9_]+', str(reason)):
-                    reason = "unknown"
-            except Exception:
-                pass
-            print(f"::error::{name} API returned HTTP {error.code}, reason={reason}{meta_codes}. Saved embeds retained.")
+                payload = json.loads(raw_body)
+
+                response_details = json.dumps(
+                    payload,
+                    ensure_ascii=False,
+                    separators=(",", ":")
+                )
+
+            except (json.JSONDecodeError, TypeError):
+                response_details = json.dumps(
+                    raw_body,
+                    ensure_ascii=False
+                )
+
+            print(
+                f"::error::{name} API returned HTTP {error.code}. "
+                f"Complete response: {response_details}"
+            )
+
             failures += 1
         except Exception:
             # Request errors may contain credential-bearing URLs; never print them.
