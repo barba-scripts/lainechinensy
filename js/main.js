@@ -89,9 +89,14 @@
     document.documentElement.classList.remove('custom-cursor-active');
   };
   const interactive = 'a[href], button, input, select, textarea, summary, [role="button"]';
+  // Modal dialogs render above the body cursor in the browser's top layer.
+  const modalOpen = () => Boolean(document.querySelector('dialog:modal'));
+  new MutationObserver(() => { if (modalOpen()) hide(); }).observe(document.body, {
+    subtree: true, attributes: true, attributeFilter: ['open'],
+  });
 
   document.addEventListener('pointermove', event => {
-    if (!allowed.matches || event.pointerType !== 'mouse') { hide(); return; }
+    if (!allowed.matches || event.pointerType !== 'mouse' || modalOpen()) { hide(); return; }
     const target = event.target;
     const overControl = Boolean(target.closest?.(interactive));
     const overText = target.closest?.('p, h1, h2, h3, h4, h5, h6, blockquote, li, dt, dd, figcaption');
@@ -115,7 +120,7 @@
     document.querySelectorAll('.cursor-ripple').forEach(ripple => ripple.remove());
   });
   document.addEventListener('pointerdown', event => {
-    if (!allowed.matches || event.pointerType !== 'mouse' || event.button !== 0) return;
+    if (!allowed.matches || event.pointerType !== 'mouse' || event.button !== 0 || modalOpen()) return;
     const ripple = document.createElement('div');
     ripple.className = 'cursor-ripple';
     ripple.setAttribute('aria-hidden', 'true');
