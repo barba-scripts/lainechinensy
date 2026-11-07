@@ -196,3 +196,11 @@ h1,h2,h3{font-family:'Cinzel',Georgia,serif}
 .hero-path strong{font-size:clamp(1.05rem,1.8vw,1.4rem);line-height:1.5}
 .hero-explore a{font-size:1.12rem;min-height:44px}
 @media(max-width:400px){.hero-path{min-height:112px;padding:16px 24px 16px 12px}.hero-path strong{font-size:1rem}}
+
+/* Plain-language explanations for the ceremonial invitations. */
+.hero-path,.hero-explore a{position:relative}
+.hero-hint{position:absolute;top:calc(100% + 8px);left:0;z-index:12;width:max-content;max-width:min(270px,75vw);padding:10px 13px;background:#211b27;color:#eee5d8;border:1px solid var(--gold);box-shadow:0 8px 24px #0008;font:1rem/1.45 'Cormorant Garamond',Georgia,serif;letter-spacing:0;text-transform:none;text-align:left;opacity:0;visibility:hidden;pointer-events:none}
+.hero-hint::before{content:'';position:absolute;left:0;right:0;top:-10px;height:10px}
+.hero-path:hover,.hero-path:focus-visible,.hero-explore a:hover,.hero-explore a:focus-visible{z-index:13}
+.hero-path:hover .hero-hint,.hero-path:focus-visible .hero-hint,.hero-explore a:hover .hero-hint,.hero-explore a:focus-visible .hero-hint{opacity:1;visibility:visible;pointer-events:auto}
+.hero-hints-dismissed .hero-hint{opacity:0!important;visibility:hidden!important;pointer-events:none!important}

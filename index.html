@@ -39,12 +39,12 @@
                     <p class="intro">Hear me, Voidling, for my melody shall permeate the Shores of Evernaught, at the
                         End of Eternity.</p>
                     <div class="hero-paths">
-                        <a class="hero-path hero-path-music" href="music.html"><span class="hero-path-kind">Listen · Music</span><strong>Cantus Voidere</strong><span class="hero-path-arrow" aria-hidden="true">↗</span></a>
-                        <a class="hero-path" href="art.html"><span class="hero-path-kind">Explore · Art</span><strong>Obra Solumbra</strong><span class="hero-path-arrow" aria-hidden="true">↗</span></a>
+                        <a class="hero-path hero-path-music" href="music.html" aria-describedby="hint-music"><span class="hero-path-kind">Listen · Music</span><strong>Cantus Voidere</strong><span class="hero-path-arrow" aria-hidden="true">↗</span></a>
+                        <a class="hero-path" href="art.html" aria-describedby="hint-art"><span class="hero-path-kind">Explore · Art</span><strong>Obra Solumbra</strong><span class="hero-path-arrow" aria-hidden="true">↗</span></a>
                     </div>
                     <nav class="hero-explore" aria-label="Explore the Sanctum">
                         <span class="hero-explore-label">Wander further</span>
-                        <div><a href="gospel.html">Hear the Void Gospel</a><a href="recollections.html">Recollect Yourself</a><a href="https://lainechinensy.github.io/falzchen/">Enter the Falzchen Librarium</a><a href="about.html">Pray to the Priestess</a><a href="connect.html">Realms Beyond the Shore</a></div>
+                        <div><a href="gospel.html" aria-describedby="hint-gospel">Hear the Void Gospel<span class="hero-hint" id="hint-gospel" role="tooltip">Watch my latest YouTube videos.</span></a><a href="recollections.html" aria-describedby="hint-recollections">Recollect Yourself<span class="hero-hint" id="hint-recollections" role="tooltip">Read stories and memory logs from the Falzchen universe.</span></a><a href="https://lainechinensy.github.io/falzchen/" aria-describedby="hint-lore">Enter the Falzchen Librarium<span class="hero-hint" id="hint-lore" role="tooltip">Explore the world, characters, and lore of The Falzchen.</span></a><a href="about.html" aria-describedby="hint-about">Pray to the Priestess<span class="hero-hint" id="hint-about" role="tooltip">Meet the artist behind the Void Priestess.</span></a><a href="connect.html" aria-describedby="hint-connect">Realms Beyond the Shore<span class="hero-hint" id="hint-connect" role="tooltip">Find my social profiles and places to listen.</span></a></div>
                     </nav>
                 </div>
                 <div class="portrait-shrine"><img src="images/Void%20priestess%20v2%20CARA%20-%20Profile%20Cut.png"
@@ -89,6 +89,7 @@
     </footer>
     <dialog class="latest-dialog" aria-labelledby="latest-preview-title"><button class="latest-close" type="button" aria-label="Close preview">?</button><div class="latest-preview-media"></div><p class="eyebrow" id="latest-preview-kind"></p><h2 id="latest-preview-title"></h2><p id="latest-preview-excerpt"></p><a class="btn" id="latest-preview-link">Open full content ?</a></dialog>
     <script src="js/latest.js" defer></script>
+    <script src="js/hero-hints.js" defer></script>
     <script src="js/main.js" defer></script>
 </body>
 
