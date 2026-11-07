@@ -157,14 +157,21 @@ def main():
         except HTTPError as error:
             # Only expose structured error codes, never URLs, tokens, or messages.
             reason = "unknown"
+            meta_codes = ""
             try:
                 details = json.load(error).get('error', {})
+                # Meta returns numeric codes instead of Google's errors[].reason.
+                # Keep messages and request URLs private: both can contain secrets.
+                for field in ('code', 'error_subcode'):
+                    value = details.get(field)
+                    if type(value) is int:
+                        meta_codes += f", {field}={value}"
                 reason = details.get('errors', [{}])[0].get('reason', 'unknown')
                 if not re.fullmatch(r'[A-Za-z0-9_]+', str(reason)):
                     reason = "unknown"
             except Exception:
                 pass
-            print(f"::error::{name} API returned HTTP {error.code}, reason={reason}. Saved embeds retained.")
+            print(f"::error::{name} API returned HTTP {error.code}, reason={reason}{meta_codes}. Saved embeds retained.")
             failures += 1
         except Exception:
             # Request errors may contain credential-bearing URLs; never print them.

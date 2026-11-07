@@ -1,13 +1,29 @@
 import re
+import io
+import json
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
+from urllib.error import HTTPError
 
 import sync_social as sync
 
 
 class SocialSyncTests(unittest.TestCase):
+    def test_meta_error_codes_are_reported_without_sensitive_details(self):
+        payload = {'error': {'code': 190, 'error_subcode': 463,
+                             'message': 'secret-token in request'}}
+        error = HTTPError('https://example.com/?token=secret-token', 400,
+                          'Bad Request', {}, io.BytesIO(json.dumps(payload).encode()))
+        self.addCleanup(error.close)
+        with patch.object(sync, 'youtube', side_effect=sync.NotConfigured), patch.object(sync, 'instagram', side_effect=error), patch.object(sync, 'print') as output:
+            self.assertTrue(sync.main())
+        messages = ' '.join(call.args[0] for call in output.call_args_list)
+        self.assertIn('code=190, error_subcode=463', messages)
+        self.assertNotIn('secret-token', messages)
+        self.assertNotIn('example.com', messages)
+
     def setUp(self):
         # Simulated API failures must not create real GitHub Actions annotations.
         output = patch.object(sync, 'print', create=True)
