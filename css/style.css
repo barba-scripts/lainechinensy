@@ -190,3 +190,9 @@ h1,h2,h3{font-family:'Cinzel',Georgia,serif}
 .hero-explore a{display:inline-flex;align-items:center;min-height:40px;font-size:1rem;color:#c7becb;text-decoration:underline;text-decoration-color:#6e5b4777;text-underline-offset:5px}
 .hero-explore a:hover{color:#f3d69a;text-decoration-color:var(--gold)}
 @media(max-width:400px){.hero-paths{gap:10px}.hero-path{padding:14px 25px 14px 12px;min-height:84px}.hero-path-kind{font-size:.55rem}.hero-path-arrow{right:9px}.hero-explore>div{gap:0 16px}}
+
+/* Give the principal invitations room and retain their ceremonial wording. */
+.hero-path{min-height:122px;padding:22px 36px 22px 22px}
+.hero-path strong{font-size:clamp(1.05rem,1.8vw,1.4rem);line-height:1.5}
+.hero-explore a{font-size:1.12rem;min-height:44px}
+@media(max-width:400px){.hero-path{min-height:112px;padding:16px 24px 16px 12px}.hero-path strong{font-size:1rem}}
