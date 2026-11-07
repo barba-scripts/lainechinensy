@@ -175,3 +175,18 @@ h1,h2,h3{font-family:'Cinzel',Georgia,serif}
 .latest-close{position:sticky;float:right;top:0;width:36px;height:36px;margin:-24px -24px 8px 8px;background:var(--panel);color:var(--silver);border:1px solid var(--line);font-size:1.6rem;cursor:pointer}
 @media(max-width:1100px){.latest-inner{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 24px}.latest-inner h2{grid-column:1/-1}.latest-inner h2 br{display:none}.latest-inner h2 span{margin-left:.4em}}
 @media(max-width:600px){.latest-inner{grid-template-columns:1fr;gap:0}.latest-inner h2{margin-bottom:8px}.latest-entry{padding:8px 0;border-top:1px solid #6e5b4755}.latest-thumb{height:40px;flex-basis:40px}.latest-entry .latest-item{min-height:40px}.latest-dialog{padding:28px}.latest-close{margin:-16px -16px 8px 8px}}
+
+/* Two clear entrances beneath the Sanctum introduction. */
+.hero-paths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:30px;max-width:550px}
+.hero-path{position:relative;display:flex;flex-direction:column;justify-content:center;gap:5px;min-height:94px;padding:18px 34px 18px 20px;border:1px solid #a28351;background:linear-gradient(135deg,#302731,#1b1820);transition:background .2s,border-color .2s}
+.hero-path-music{background:linear-gradient(135deg,#59432a,#342a23);border-color:var(--gold)}
+.hero-path-kind{font:.62rem/1.5 'Cinzel',Georgia,serif;letter-spacing:.12em;text-transform:uppercase;color:#d6bb8e}
+.hero-path strong{font:500 clamp(.85rem,1.4vw,1.1rem)/1.4 'Cinzel',Georgia,serif;color:#f0e3cc}
+.hero-path-arrow{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:1.1rem}
+.hero-path:hover{border-color:#f0ca7e;background:#40313b}.hero-path-music:hover{background:#644d30}
+.hero-explore{margin-top:22px;max-width:550px;padding-top:16px;border-top:1px solid #6e5b475c}
+.hero-explore-label{display:block;margin-bottom:5px;font:.58rem/1.5 'Cinzel',Georgia,serif;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+.hero-explore>div{display:flex;flex-wrap:wrap;gap:0 20px}
+.hero-explore a{display:inline-flex;align-items:center;min-height:40px;font-size:1rem;color:#c7becb;text-decoration:underline;text-decoration-color:#6e5b4777;text-underline-offset:5px}
+.hero-explore a:hover{color:#f3d69a;text-decoration-color:var(--gold)}
+@media(max-width:400px){.hero-paths{gap:10px}.hero-path{padding:14px 25px 14px 12px;min-height:84px}.hero-path-kind{font-size:.55rem}.hero-path-arrow{right:9px}.hero-explore>div{gap:0 16px}}
