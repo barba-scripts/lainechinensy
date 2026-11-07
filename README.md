@@ -56,8 +56,9 @@ One-time setup in [the repository settings](https://github.com/lainechinensy/lai
 3. Allow Actions to write repository contents. If branch protection blocks bot
    commits, configure an allowed automation path before enabling the schedule.
 4. Push these changes to main, then open **Actions > Update social embeds > Run
-   workflow** to verify the first live update. Missing/expired credentials mark the
-   run as failed, retain the affected page's saved embeds, and still publish any
+   workflow** to verify the first live update. Missing credentials skip that source
+   with a warning. Invalid/expired credentials mark the run as failed, retain the
+   affected page's saved embeds, and still publish any
    successful source updates. Enable GitHub failed-workflow notifications.
 
 The API version defaults to `v25.0`; override with the Actions variable

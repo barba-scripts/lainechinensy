@@ -8,6 +8,10 @@ import sync_social as sync
 
 
 class SocialSyncTests(unittest.TestCase):
+    def test_missing_credentials_skip_without_failing(self):
+        with patch.object(sync, 'youtube', side_effect=sync.NotConfigured), patch.object(sync, 'instagram', side_effect=sync.NotConfigured):
+            self.assertFalse(sync.main())
+
     def test_instagram_login_endpoint_and_newest_first(self):
         response = {'data': [
             {'permalink': 'https://www.instagram.com/p/OLDER/', 'timestamp': '2026-11-01'},

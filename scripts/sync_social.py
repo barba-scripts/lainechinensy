@@ -7,8 +7,13 @@ import re
 import sys
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
+from urllib.error import HTTPError
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+class NotConfigured(Exception):
+    pass
 
 
 def api(url, params, token=None):
@@ -21,7 +26,7 @@ def api(url, params, token=None):
 def youtube():
     key = os.environ.get("YOUTUBE_API_KEY")
     if not key:
-        raise ValueError("YOUTUBE_API_KEY is missing")
+        raise NotConfigured("YOUTUBE_API_KEY is missing")
     base = "https://www.googleapis.com/youtube/v3/"
     channel = api(base + "channels", {
         "part": "contentDetails", "forHandle": "@lainechinensy", "key": key,
@@ -47,7 +52,7 @@ def instagram():
     user = os.environ.get("INSTAGRAM_USER_ID", "")
     version = os.environ.get("INSTAGRAM_API_VERSION", "v25.0")
     if not token or not user.isdigit():
-        raise ValueError("INSTAGRAM_ACCESS_TOKEN or INSTAGRAM_USER_ID is missing")
+        raise NotConfigured("INSTAGRAM_ACCESS_TOKEN or INSTAGRAM_USER_ID is missing")
     if not re.fullmatch(r"v\d+\.0", version):
         raise ValueError("Invalid INSTAGRAM_API_VERSION")
     # Instagram Login: Creator/Business account; no linked Facebook Page needed.
@@ -113,6 +118,20 @@ def main():
             if updated != page:
                 path.write_text(updated, encoding="utf-8", newline="\n")
             print(f"{name}: checked successfully")
+        except NotConfigured:
+            print(f"::warning::{name} is not configured yet; saved embeds retained.")
+        except HTTPError as error:
+            # Only expose structured error codes, never URLs, tokens, or messages.
+            reason = "unknown"
+            try:
+                details = json.load(error).get('error', {})
+                reason = details.get('errors', [{}])[0].get('reason', 'unknown')
+                if not re.fullmatch(r'[A-Za-z0-9_]+', str(reason)):
+                    reason = "unknown"
+            except Exception:
+                pass
+            print(f"::error::{name} API returned HTTP {error.code}, reason={reason}. Saved embeds retained.")
+            failures += 1
         except Exception:
             # Request errors may contain credential-bearing URLs; never print them.
             print(f"::error::{name} sync failed. Saved embeds retained. Check credentials, API access, and container markup.")
