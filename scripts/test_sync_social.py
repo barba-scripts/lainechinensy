@@ -8,6 +8,12 @@ import sync_social as sync
 
 
 class SocialSyncTests(unittest.TestCase):
+    def setUp(self):
+        # Simulated API failures must not create real GitHub Actions annotations.
+        output = patch.object(sync, 'print', create=True)
+        output.start()
+        self.addCleanup(output.stop)
+
     def test_missing_credentials_skip_without_failing(self):
         with patch.object(sync, 'youtube', side_effect=sync.NotConfigured), patch.object(sync, 'instagram', side_effect=sync.NotConfigured):
             self.assertFalse(sync.main())
