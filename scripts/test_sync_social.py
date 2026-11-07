@@ -19,12 +19,24 @@ class SocialSyncTests(unittest.TestCase):
         ]}
         with patch.dict('os.environ', {'INSTAGRAM_ACCESS_TOKEN': 'test-token', 'INSTAGRAM_USER_ID': '123', 'INSTAGRAM_API_VERSION': 'v25.0'}), patch.object(sync, 'api', return_value=response) as request:
             self.assertEqual(sync.instagram(), ['https://www.instagram.com/reel/NEWER/', 'https://www.instagram.com/p/OLDER/'])
-            request.assert_called_once_with('https://graph.instagram.com/v25.0/123/media', {'fields': 'permalink,timestamp', 'limit': 100}, 'test-token')
+            request.assert_called_once_with('https://graph.instagram.com/v25.0/123/media', {'fields': 'permalink,timestamp,media_type,media_url,thumbnail_url', 'limit': 100}, 'test-token')
+
+    def test_reel_thumbnail_updates_and_escapes_homepage_metadata(self):
+        response = {'data': [{'permalink': 'https://www.instagram.com/reel/NEWEST/', 'timestamp': '2026-11-07', 'media_type': 'VIDEO', 'media_url': 'https://cdn.example/video.mp4', 'thumbnail_url': 'https://cdn.example/preview.jpg?a=1&b=2'}]}
+        with patch.dict('os.environ', {'INSTAGRAM_ACCESS_TOKEN': 'test', 'INSTAGRAM_USER_ID': '123'}), patch.object(sync, 'api', return_value=response):
+            posts = sync.instagram()
+        self.assertEqual(posts.preview_image, 'https://cdn.example/preview.jpg?a=1&b=2')
+        page = (sync.ROOT / 'index.html').read_text(encoding='utf-8')
+        updated = sync.render_latest_instagram(page, posts[0], posts.preview_image)
+        self.assertIn('data-preview-image="https://cdn.example/preview.jpg?a=1&amp;b=2"', updated)
+        self.assertNotIn('video.mp4', updated)
+        self.assertIn('data-latest="youtube"', updated)
+        self.assertIn('data-latest="recollection"', updated)
 
     def test_unified_login_uses_facebook_graph(self):
         with patch.dict('os.environ', {'INSTAGRAM_ACCESS_TOKEN': 'test-token', 'INSTAGRAM_USER_ID': '123', 'INSTAGRAM_API_VERSION': 'v25.0', 'INSTAGRAM_LOGIN_MODE': 'facebook'}), patch.object(sync, 'api', return_value={'data': []}) as request:
             self.assertEqual(sync.instagram(), [])
-            request.assert_called_once_with('https://graph.facebook.com/v25.0/123/media', {'fields': 'permalink,timestamp', 'limit': 100}, 'test-token')
+            request.assert_called_once_with('https://graph.facebook.com/v25.0/123/media', {'fields': 'permalink,timestamp,media_type,media_url,thumbnail_url', 'limit': 100}, 'test-token')
 
     def test_invalid_login_mode_rejected_before_request(self):
         with patch.dict('os.environ', {'INSTAGRAM_ACCESS_TOKEN': 'test-token', 'INSTAGRAM_USER_ID': '123', 'INSTAGRAM_LOGIN_MODE': 'example.com'}), patch.object(sync, 'api') as request:

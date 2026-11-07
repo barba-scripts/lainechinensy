@@ -16,6 +16,11 @@ class NotConfigured(Exception):
     pass
 
 
+class InstagramPosts(list):
+    """Permalinks plus the newest post's public preview image."""
+    preview_image = ''
+
+
 def api(url, params, token=None):
     headers = {"Authorization": f"Bearer {token}"} if token else {}
     request = Request(url + "?" + urlencode(params), headers=headers)
@@ -61,11 +66,15 @@ def instagram():
         raise ValueError("Invalid INSTAGRAM_LOGIN_MODE")
     # Unified Login system-user tokens use the Facebook Graph API host.
     items = api(f"https://{hosts[login]}/{version}/{user}/media", {
-        "fields": "permalink,timestamp", "limit": 100,
+        "fields": "permalink,timestamp,media_type,media_url,thumbnail_url", "limit": 100,
     }, token)["data"]
     items.sort(key=lambda item: item["timestamp"], reverse=True)
-    return [item["permalink"].split("?")[0] for item in items
-            if re.fullmatch(r"https://www\.instagram\.com/(?:p|reel)/[\w-]+/?", item.get("permalink", "").split("?")[0])]
+    usable = [item for item in items if re.fullmatch(r"https://www\.instagram\.com/(?:p|reel)/[\w-]+/?", item.get("permalink", "").split("?")[0])]
+    posts = InstagramPosts(item['permalink'].split('?')[0] for item in usable)
+    if usable:
+        first = usable[0]
+        posts.preview_image = first.get('thumbnail_url', '') if first.get('media_type') == 'VIDEO' else first.get('media_url', '')
+    return posts
 
 
 def render_youtube(page, videos):
@@ -109,13 +118,17 @@ def render_instagram(page, links):
             + join(cards[6:]) + page[match.start(5):])
 
 
-def render_latest_instagram(page, link):
+def render_latest_instagram(page, link, preview_image=None):
     if not re.fullmatch(r"https://www\.instagram\.com/(?:p|reel)/[\w-]+/?", link):
         raise ValueError("Invalid Instagram permalink")
-    pattern = r'(<!-- latest-content:start -->\s*<a class="latest-item" href=")[^"]+("[^>]*>)'
+    pattern = r'(data-latest="instagram".*?<a class="latest-item" href=")[^"]+("[^>]*>)'
     updated, count = re.subn(pattern, lambda match: match[1] + link + match[2], page)
     if count != 1:
         raise ValueError("Latest content link missing")
+    if preview_image is not None:
+        if preview_image and not preview_image.startswith('https://'):
+            raise ValueError('Invalid preview image URL')
+        updated = re.sub(r'(data-latest="instagram".*?data-preview-image=")[^"]*(")', lambda match: match[1] + html.escape(preview_image, quote=True) + match[2], updated)
     return updated
 
 
@@ -133,7 +146,7 @@ def main():
             homepage = ROOT / 'index.html'
             if name == 'Instagram' and homepage.exists():
                 home = homepage.read_text(encoding='utf-8')
-                latest = render_latest_instagram(home, content[0])
+                latest = render_latest_instagram(home, content[0], getattr(content, 'preview_image', None))
                 if latest != home:
                     homepage.write_text(latest, encoding='utf-8', newline='\n')
             if updated != page:
