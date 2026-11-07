@@ -271,67 +271,44 @@ if (toggle && nav) {
 }
 document.querySelectorAll('[data-year]').forEach(el => { el.textContent = new Date().getFullYear(); });
 
-// Praise is an explicit action, limited to one per browser per Manila day.
+// A single shared visit badge; no praise API or browser storage is required.
 (() => {
   const panel = document.querySelector('[data-voidling-counter]');
   if (!panel) return;
-  const button = panel.querySelector('[data-praise-button]');
-  const value = panel.querySelector('[data-counter-placeholder]');
   const status = panel.querySelector('[data-counter-status]');
-  const endpoint = window.VOID_PRAISE_ENDPOINT || '/api/praise';
-  let visitor;
-  let busy = false;
-  let resetTimer;
-  try {
-    visitor = localStorage.getItem('void-praise-visitor');
-    if (!visitor || !/^[a-f0-9-]{36}$/i.test(visitor)) {
-      visitor = crypto.randomUUID();
-      localStorage.setItem('void-praise-visitor', visitor);
-    }
-  } catch {
-    status.textContent = 'Allow browser storage to offer your daily praise.';
+  const placeholder = panel.querySelector('[data-counter-placeholder]');
+  const publicHosts = ['lainechinensy.net', 'www.lainechinensy.net', 'lainechinensy.github.io'];
+  if (location.protocol !== 'https:' || !publicHosts.includes(location.hostname)
+      || (location.hostname === 'lainechinensy.github.io' && location.pathname.startsWith('/falzchen/'))) {
+    status.textContent = 'The live visit count appears on the published site.';
     return;
   }
-  async function update(method = 'GET') {
-    if (busy) return;
-    busy = true;
-    button.disabled = true;
-    if (method === 'POST') button.textContent = 'Offering praise?';
-    try {
-      const response = await fetch(endpoint, {
-        method, headers: { 'X-Voidling-ID': visitor }, cache: 'no-store',
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!response.ok) throw new Error('Praise unavailable');
-      const data = await response.json();
-      if (!Number.isSafeInteger(data.total) || data.total < 0
-          || typeof data.praised !== 'boolean' || !Number.isFinite(Date.parse(data.nextReset))) {
-        throw new Error('Invalid praise response');
-      }
-      value.textContent = data.total.toLocaleString();
-      value.removeAttribute('aria-hidden');
-      button.disabled = data.praised;
-      button.textContent = data.praised ? 'Praised today ?' : 'Praise the Void Sun';
-      status.textContent = data.praised
-        ? 'Your voice has joined the choir. Return after midnight Philippine time.'
-        : 'One offering each day. The choir renews at midnight Philippine time.';
-      window.clearTimeout(resetTimer);
-      resetTimer = window.setTimeout(() => update(), Math.max(1000, Date.parse(data.nextReset) - Date.now() + 1000));
-    } catch {
-      button.disabled = false;
-      button.textContent = method === 'POST' ? 'Try praise again' : 'Retry connection';
-      status.textContent = 'The choir cannot be reached. Please try again; your praise has not been confirmed.';
-      button.dataset.retry = method === 'POST' ? 'POST' : 'GET';
-      return;
-    } finally {
-      busy = false;
-    }
-    delete button.dataset.retry;
-  }
-  button.addEventListener('click', () => update(button.dataset.retry || 'POST'));
-  window.addEventListener('focus', () => update());
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) update(); });
-  update();
+  const badge = document.createElement('img');
+  badge.alt = 'Total visits praising the Void Sun';
+  badge.height = 48;
+  badge.hidden = true;
+  badge.decoding = 'async';
+  badge.fetchPriority = 'low';
+  badge.referrerPolicy = 'no-referrer';
+  const unavailable = () => {
+    badge.hidden = true;
+    placeholder.hidden = false;
+    status.hidden = false;
+    status.textContent = 'The choir is beyond counting for now.';
+  };
+  const timeout = window.setTimeout(unavailable, 10000);
+  badge.addEventListener('load', () => {
+    window.clearTimeout(timeout);
+    badge.hidden = false;
+    placeholder.hidden = true;
+    status.hidden = true;
+  }, { once: true });
+  badge.addEventListener('error', () => {
+    window.clearTimeout(timeout);
+    unavailable();
+  }, { once: true });
+  placeholder.after(badge);
+  badge.src = 'https://hits.sh/lainechinensy.net.svg?label=%E2%9C%A6&color=c79b45&labelColor=211923&style=flat-square';
 })();
 
 // Add Instagram artwork in small batches instead of loading the entire portfolio at once.

@@ -14,44 +14,27 @@ Open `index.html` in a browser or use VS Code Live Server.
 - Replace Bandcamp/Spotify/YouTube placeholder homepage links with your artist profile URLs.
 - Wiki currently links to https://lainechinensy.github.io/falzchen/; change it if you later use a custom wiki subdomain.
 
-## Daily praise and cursor
+## Visit counter and cursor
 
-The footer counts explicit Praise button submissions, not page visits. Each
-browser may praise once per calendar day, resetting at midnight Asia/Manila.
-An anonymous random browser ID is stored in localStorage. A server-side unique
-constraint prevents repeat requests from that ID counting twice in a day,
-including concurrent clicks, retries, and navigation between pages. Clearing
-storage, using another browser, or making up a new ID bypasses this soft limit;
-this is a community interaction, not a verified one-person voting system.
-No Meta token or Instagram connection is involved.
+The footer uses a shared Hits badge for `lainechinensy.net`, styled as
+"The Voidlings have praised the Void Sun X times." X represents cumulative
+badge requests across pages, including repeat visits, not unique visitors or
+button clicks. Browser caching, blockers and bots can affect the total.
+No Cloudflare account, custom backend, API keys or browser storage is required.
+Local previews do not contact the counter. Failed loads show an unavailable
+message instead of a fabricated count. The count begins with the service and
+does not recover historical visits.
 
-Preview with `python scripts/preview.py`, then open http://127.0.0.1:8000.
-The local API stores its separate preview count in ignored `.local/praise.sqlite3`.
-It never changes the production count. Merely loading a page does not add praise.
-The UI handles loading, unavailable service, confirmation, and the daily reset.
+Provider: https://github.com/silentsoft/hits
+Privacy: https://hits.sh/privacy/
 
-GitHub Pages cannot run the praise API. A production Cloudflare Worker + D1
-implementation is prepared in `praise-api/`; it has not been provisioned or deployed:
+Preview with `python -m http.server 8000 --bind 127.0.0.1`.
+The optional daily-praise backend prototype remains in `praise-api/` and
+`scripts/preview.py` for reference, but is not loaded or used by the website.
 
-1. Sign in to Cloudflare with Wrangler, then run `npx wrangler d1 create void-sun-praise`
-   from `praise-api/`.
-2. Put the returned database ID in `praise-api/wrangler.jsonc`.
-3. From `praise-api/`, run `npx wrangler d1 execute void-sun-praise --remote --file=schema.sql`.
-4. Run `npx wrangler deploy` from that directory.
-5. Set `window.VOID_PRAISE_ENDPOINT` in `js/praise-config.js` to the deployed
-   Worker's HTTPS URL ending in `/api/praise`, then publish the GitHub Pages changes.
-
-Until the backend is connected, the public button reports the connection failure
-rather than presenting a fake total or recording praise only on one device.
-The API allows the site's three existing production origins and uses D1's
-transactional batch API. A database uniqueness constraint supplies the daily limit.
-See [D1 bindings and batch documentation](https://developers.cloudflare.com/d1/worker-api/d1-database/).
-Checks: `node --test praise-api/test_worker.mjs` and the existing Python tests.
-
-The gold spearhead is a CSS image cursor with a browser fallback. Text fields
-retain text cursors; movement does not depend on JavaScript. Click rings respect
-reduced motion. Idle activity updates the deadline without DOM writes or timer
-recreation on each mouse movement.
+The gold spearhead is a CSS image cursor with a native fallback. Click rings
+respect reduced motion. The Kuromega encounter and its manual test trigger
+are independent of the visit counter.
 
 ## Homepage blog
 

@@ -101,8 +101,6 @@ h1,h2,h3{font-family:'Cinzel',Georgia,serif}
 .voidling-counter-value{display:flex;align-items:center;justify-content:center;gap:12px;min-height:54px;width:100%}
 .voidling-counter-placeholder{font:2.7rem/1 'Cinzel',serif;color:#e6c17f}
 .voidling-counter-times{font-size:1.3rem;color:#ded3df}
-.voidling-praise{min-width:230px;min-height:48px;margin:4px 0;justify-content:center}
-.voidling-praise:disabled{opacity:.65;cursor:default}
 .voidling-counter img{height:48px;width:auto;max-width:75%;image-rendering:auto}
 .voidling-counter img[hidden],.voidling-counter [hidden]{display:none}
 .voidling-counter-status{margin:0;font-size:.95rem;font-style:italic;color:#c7b8c4}
