@@ -77,46 +77,12 @@
 
 })();
 
-// Gold spearhead cursor with native fallbacks for text and non-mouse input.
+// The browser draws the gold cursor through CSS, independent of JavaScript work.
+// Only the optional click rings need DOM elements.
 (() => {
   const allowed = window.matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)');
-  const halo = document.createElement('div');
-  halo.className = 'cursor-halo';
-  halo.setAttribute('aria-hidden', 'true');
-  document.body.append(halo);
-  const hide = () => {
-    halo.classList.remove('is-visible');
-    document.documentElement.classList.remove('custom-cursor-active');
-  };
-  const interactive = 'a[href], button, input, select, textarea, summary, [role="button"]';
-  // Modal dialogs render above the body cursor in the browser's top layer.
   const modalOpen = () => Boolean(document.querySelector('dialog:modal'));
-  new MutationObserver(() => { if (modalOpen()) hide(); }).observe(document.body, {
-    subtree: true, attributes: true, attributeFilter: ['open'],
-  });
-
-  document.addEventListener('pointermove', event => {
-    if (!allowed.matches || event.pointerType !== 'mouse' || modalOpen()) { hide(); return; }
-    const target = event.target;
-    const overControl = Boolean(target.closest?.(interactive));
-    const overText = target.closest?.('p, h1, h2, h3, h4, h5, h6, blockquote, li, dt, dd, figcaption');
-    if (target.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"]), iframe') || (overText && !overControl)) {
-      hide();
-      return;
-    }
-    halo.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
-    halo.classList.toggle('is-interactive', overControl);
-    halo.classList.add('is-visible');
-    document.documentElement.classList.add('custom-cursor-active');
-  }, { passive: true });
-  document.addEventListener('pointerout', event => {
-    if (!event.relatedTarget || event.relatedTarget instanceof HTMLIFrameElement) hide();
-  });
-  window.addEventListener('blur', hide);
-  document.addEventListener('visibilitychange', hide);
-  document.addEventListener('keydown', hide);
   allowed.addEventListener('change', () => {
-    hide();
     document.querySelectorAll('.cursor-ripple').forEach(ripple => ripple.remove());
   });
   document.addEventListener('pointerdown', event => {
@@ -135,8 +101,10 @@
 
 // Kuromega notices a still, visible page. Activity always returns to the page.
 (() => {
-  const idleDelay = 300000;
+  // The wolf arrives at five minutes: 4m30s stillness + two 15s warnings.
+  const idleDelay = 270000;
   const stageDelay = 15000;
+  const manualStageDelay = 15000;
   // Temporary testing display. Set to false to remove the countdown.
   const showEncounterCounter = true;
   const counter = document.createElement('div');
@@ -169,6 +137,9 @@
   const silhouette = document.createElement('div');
   silhouette.className = 'kuromega-silhouette';
   silhouette.setAttribute('aria-hidden', 'true');
+  const fog = document.createElement('div');
+  fog.className = 'kuromega-fog';
+  fog.setAttribute('aria-hidden', 'true');
   const copy = document.createElement('div');
   copy.className = 'kuromega-copy';
   const message = document.createElement('p');
@@ -177,9 +148,11 @@
   hint.className = 'kuromega-hint';
   hint.textContent = 'Move, scroll, press a key, or tap to return.';
   copy.append(message, hint);
-  encounter.append(stars, shadow, silhouette, copy);
+  encounter.append(stars, shadow, silhouette, fog, copy);
   document.body.append(encounter);
   let timer;
+  let passageTimer;
+  let manual = false;
   let stage = 0;
   const messages = [
     'Something has noticed your stillness.',
@@ -195,11 +168,11 @@
     } else if (document.activeElement instanceof HTMLIFrameElement) {
       label = 'Kuromega encounter paused while an embedded player is focused';
     } else if (stage === messages.length) {
-      label = 'Kuromega draws near. Move to dismiss.';
+      label = manual ? 'Kuromega draws near. Press Escape to dismiss.' : 'Kuromega draws near. Move to dismiss.';
       progress = 1;
     } else {
       const seconds = Math.max(0, Math.ceil((nextStageAt - performance.now()) / 1000));
-      const duration = stage === 0 ? idleDelay : stageDelay;
+      const duration = stage === 0 ? idleDelay : (manual ? manualStageDelay : stageDelay);
       progress = Math.min(1, Math.max(0, 1 - (nextStageAt - performance.now()) / duration));
       label = stage === 0
         ? `Kuromega approaches in ${seconds} seconds of stillness`
@@ -218,18 +191,34 @@
       reset();
       return;
     }
+    // Activity moves the deadline without rebuilding timers or changing the DOM
+    // on every pointer event. Re-arm only when the previous deadline arrives.
+    const remaining = nextStageAt - performance.now();
+    if (remaining > 0) {
+      timer = window.setTimeout(advance, remaining);
+      return;
+    }
     stage++;
     encounter.hidden = false;
     encounter.dataset.stage = String(stage);
     message.textContent = messages[stage - 1];
+    if (stage === messages.length) {
+      document.body.classList.add('kuromega-passing');
+      passageTimer = window.setTimeout(reset, 24000);
+    }
     if (stage < messages.length) {
-      nextStageAt = performance.now() + stageDelay;
-      timer = window.setTimeout(advance, stageDelay);
+      const delay = manual ? manualStageDelay : stageDelay;
+      nextStageAt = performance.now() + delay;
+      timer = window.setTimeout(advance, delay);
     }
     updateCounter();
   }
   function reset() {
     window.clearTimeout(timer);
+    window.clearTimeout(passageTimer);
+    manual = false;
+    document.body.classList.remove('kuromega-passing');
+    hint.textContent = 'Move, scroll, press a key, or tap to return.';
     stage = 0;
     encounter.hidden = true;
     message.textContent = '';
@@ -241,13 +230,27 @@
     updateCounter();
   }
   ['pointermove', 'pointerdown', 'keydown', 'scroll', 'wheel', 'touchstart', 'input'].forEach(type => {
-    document.addEventListener(type, reset, { passive: true, capture: true });
+    document.addEventListener(type, () => {
+      // Let the tester move the mouse without cancelling the wolf's passage.
+      if (manual && type === 'pointermove') return;
+      if (stage > 0) reset();
+      else nextStageAt = performance.now() + idleDelay;
+    }, { passive: true, capture: true });
+  });
+  document.querySelector('[data-kuromega-trigger]')?.addEventListener('click', () => {
+    reset();
+    window.clearTimeout(timer);
+    manual = true;
+    stage = 0;
+    nextStageAt = performance.now();
+    hint.textContent = 'Press Escape, scroll, click, or tap to return.';
+    advance();
   });
   document.addEventListener('visibilitychange', reset);
   window.addEventListener('blur', reset);
   window.addEventListener('focus', reset);
   window.addEventListener('pageshow', reset);
-  if (showEncounterCounter) window.setInterval(updateCounter, 250);
+  if (showEncounterCounter) window.setInterval(updateCounter, 1000);
   reset();
 })();
 
@@ -268,6 +271,69 @@ if (toggle && nav) {
 }
 document.querySelectorAll('[data-year]').forEach(el => { el.textContent = new Date().getFullYear(); });
 
+// Praise is an explicit action, limited to one per browser per Manila day.
+(() => {
+  const panel = document.querySelector('[data-voidling-counter]');
+  if (!panel) return;
+  const button = panel.querySelector('[data-praise-button]');
+  const value = panel.querySelector('[data-counter-placeholder]');
+  const status = panel.querySelector('[data-counter-status]');
+  const endpoint = window.VOID_PRAISE_ENDPOINT || '/api/praise';
+  let visitor;
+  let busy = false;
+  let resetTimer;
+  try {
+    visitor = localStorage.getItem('void-praise-visitor');
+    if (!visitor || !/^[a-f0-9-]{36}$/i.test(visitor)) {
+      visitor = crypto.randomUUID();
+      localStorage.setItem('void-praise-visitor', visitor);
+    }
+  } catch {
+    status.textContent = 'Allow browser storage to offer your daily praise.';
+    return;
+  }
+  async function update(method = 'GET') {
+    if (busy) return;
+    busy = true;
+    button.disabled = true;
+    if (method === 'POST') button.textContent = 'Offering praise?';
+    try {
+      const response = await fetch(endpoint, {
+        method, headers: { 'X-Voidling-ID': visitor }, cache: 'no-store',
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!response.ok) throw new Error('Praise unavailable');
+      const data = await response.json();
+      if (!Number.isSafeInteger(data.total) || data.total < 0
+          || typeof data.praised !== 'boolean' || !Number.isFinite(Date.parse(data.nextReset))) {
+        throw new Error('Invalid praise response');
+      }
+      value.textContent = data.total.toLocaleString();
+      value.removeAttribute('aria-hidden');
+      button.disabled = data.praised;
+      button.textContent = data.praised ? 'Praised today ?' : 'Praise the Void Sun';
+      status.textContent = data.praised
+        ? 'Your voice has joined the choir. Return after midnight Philippine time.'
+        : 'One offering each day. The choir renews at midnight Philippine time.';
+      window.clearTimeout(resetTimer);
+      resetTimer = window.setTimeout(() => update(), Math.max(1000, Date.parse(data.nextReset) - Date.now() + 1000));
+    } catch {
+      button.disabled = false;
+      button.textContent = method === 'POST' ? 'Try praise again' : 'Retry connection';
+      status.textContent = 'The choir cannot be reached. Please try again; your praise has not been confirmed.';
+      button.dataset.retry = method === 'POST' ? 'POST' : 'GET';
+      return;
+    } finally {
+      busy = false;
+    }
+    delete button.dataset.retry;
+  }
+  button.addEventListener('click', () => update(button.dataset.retry || 'POST'));
+  window.addEventListener('focus', () => update());
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) update(); });
+  update();
+})();
+
 // Add Instagram artwork in small batches instead of loading the entire portfolio at once.
 const artworkGallery = document.querySelector('#artwork-gallery');
 const moreArtwork = document.querySelector('#more-artwork');
@@ -278,7 +344,7 @@ if (artworkGallery && moreArtwork && loadMoreArtwork) {
     const cards = Array.from(moreArtwork.content.children).slice(0, 6);
     cards.forEach((card, index) => {
       card.classList.add('load-more-reveal');
-      card.style.setProperty('--reveal-delay', `${index * 100}ms`);
+      card.style.setProperty('--reveal-delay', `${index * 40}ms`);
       artworkGallery.append(card);
     });
     window.instgrm?.Embeds?.process();

@@ -87,12 +87,25 @@
         </section>
     </main>
     <footer class="site-footer">
+        <div class="voidling-counter" data-voidling-counter>
+            <span class="voidling-counter-seal" aria-hidden="true">&#9788;</span>
+            <p class="voidling-counter-invocation">The Voidlings have praised<br><strong>the Void Sun</strong></p>
+            <div class="voidling-counter-value" data-counter-value>
+                <span class="voidling-counter-placeholder" data-counter-placeholder aria-hidden="true">&mdash;</span>
+                <span class="voidling-counter-times">times.</span>
+            </div>
+            <button class="btn primary voidling-praise" type="button" data-praise-button disabled>Praise the Void Sun</button>
+            <p class="voidling-counter-status" data-counter-status role="status">The choir is gathering&hellip;</p>
+            <p class="voidling-counter-note">Offer your daily praise to the Choir of Solumbra.</p>
+            <noscript><p class="voidling-counter-note">Enable JavaScript to offer praise and reveal the count.</p></noscript>
+        </div>
         <div class="container footer-inner"><span>© <span data-year>2026</span> Laine Chinensy · Choir of
                 Solumbra</span><span>Adeo Mi Lumen, Voidere.</span></div>
     </footer>
     <dialog class="latest-dialog" aria-labelledby="latest-preview-title"><button class="latest-close" type="button" aria-label="Close preview">?</button><div class="latest-preview-media"></div><p class="eyebrow" id="latest-preview-kind"></p><h2 id="latest-preview-title"></h2><p id="latest-preview-excerpt"></p><a class="btn" id="latest-preview-link">Open full content ?</a></dialog>
     <script src="js/latest.js" defer></script>
     <script src="js/hero-hints.js" defer></script>
+    <script src="js/praise-config.js" defer></script>
     <script src="js/main.js" defer></script>
 </body>
 

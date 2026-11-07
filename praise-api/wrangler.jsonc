@@ -1,0 +1,12 @@
+{
+  "name": "void-sun-praise",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-11-08",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "void-sun-praise",
+      "database_id": "REPLACE_WITH_CREATED_D1_DATABASE_ID"
+    }
+  ]
+}

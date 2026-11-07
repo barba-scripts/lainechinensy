@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1000" viewBox="0 0 1400 1000">
+  <defs>
+    <radialGradient id="throat"><stop stop-color="#000001"/><stop offset=".74" stop-color="#010102"/><stop offset="1" stop-color="#190b14"/></radialGradient>
+    <linearGradient id="bone" x2=".2" y2="1"><stop stop-color="#47363e"/><stop offset=".6" stop-color="#827077" stop-opacity=".45"/><stop offset="1" stop-color="#100a12" stop-opacity=".1"/></linearGradient>
+    <linearGradient id="hide" x2="0" y2="1"><stop stop-color="#010103"/><stop offset=".6" stop-color="#09060c"/><stop offset="1" stop-color="#020103"/></linearGradient>
+  </defs>
+  <!-- Only a cropped, impossibly deep jaw is suggested; no face, eyes or body. -->
+  <path d="M-100 95Q160-18 360 60L1080 70Q1390 235 1300 595Q1180 1020 630 900L340 740Q760 870 875 620Q1030 320 690 270L210 250Q30 260-100 190Z" fill="url(#hide)"/>
+  <path d="M95 198Q340 110 770 175Q1200 200 1170 510Q1125 885 670 825L416 742Q805 804 913 569Q1010 320 701 284L210 270Z" fill="url(#throat)" stroke="#4c1827" stroke-opacity=".27" stroke-width="9"/>
+  <g fill="url(#bone)" opacity=".64">
+    <path d="m157 224 31-12 27 93-27-29Z"/>
+    <path d="m227 206 47-9 22 139-42-57Z"/>
+    <path d="m315 190 43-5 5 109-25-39Z"/>
+    <path d="m394 182 62 1-6 182-33-74Z"/>
+    <path d="m503 183 40 2-18 102-9-34Z"/>
+    <path d="m582 190 57 8-28 149-14-53Z"/>
+    <path d="m684 200 68 21-63 204 1-107Z"/>
+    <path d="m804 234 48 29-64 109 14-58Z"/>
+    <path d="m896 289 49 47-97 110 30-73Z"/>
+    <path d="m970 391 29 55-117 50 63-58Z"/>
+    <path d="m1025 527-5 63-132-10 78-18Z"/>
+    <path d="m985 655-38 57-92-103 65 33Z"/>
+    <path d="m890 750-60 23-48-160 46 87Z"/>
+    <path d="m773 799-57 4-17-100 35 61Z"/>
+    <path d="m662 800-53-12 16-96 12 72Z"/>
+    <path d="m554 780-49-19 26-60 6 50Z"/>
+  </g>
+  <path d="M103 181Q364 89 785 155M1169 526Q1120 909 670 851" fill="none" stroke="#562234" stroke-opacity=".13" stroke-width="20"/>
+</svg>
