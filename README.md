@@ -28,6 +28,53 @@ The Sanctum homepage has a blog section below the introduction. To publish the f
 
 ## Publish on GitHub Pages
 
-Upload the contents of this folder to the root of your GitHub Pages repository, then configure Settings > Pages to deploy from main / root. For a custom domain, set it in Pages and configure your domain's DNS records.
+### Automatic YouTube and Instagram updates
+
+The `Update social embeds` GitHub Actions workflow checks both accounts hourly
+(at minute 17; GitHub schedules can be delayed), on pushes to main, and on manual
+runs. It updates the existing HTML, commits changes, and deploys GitHub Pages.
+The current CSS, YouTube player layout, Instagram cards, and six-card Load more
+batches are preserved. YouTube displays the latest five public, embeddable videos
+from the channel's 50 most recent uploads. Instagram checks the latest 100 posts,
+places fetched posts newest first, and retains older saved cards without duplicates.
+Reels are included. Deleted older Instagram posts are not automatically removed
+from the saved archive; remove their cards manually if needed.
+
+One-time setup in [the repository settings](https://github.com/lainechinensy/lainechinensy/settings):
+
+1. Under **Secrets and variables > Actions**, add these repository secrets:
+   - `YOUTUBE_API_KEY`: a Google Cloud API key with YouTube Data API v3 enabled.
+     Restrict it to that API; browser referrer restrictions do not work for this runner.
+   - `INSTAGRAM_USER_ID`: the numeric professional Instagram account ID, not the username.
+   - `INSTAGRAM_ACCESS_TOKEN`: a valid token for Meta's **Instagram API with Facebook
+     Login**, with permission to read that account's media (`instagram_basic` and
+     applicable Page permissions). The Creator/Business account must be linked to
+     a Facebook Page. An Instagram Login token is a different API and will not work
+     with this configuration.
+2. Under **Pages > Build and deployment**, choose **GitHub Actions** as the source.
+   This workflow publishes the site for normal pushes as well as social updates.
+3. Allow Actions to write repository contents. If branch protection blocks bot
+   commits, configure an allowed automation path before enabling the schedule.
+4. Push these changes to main, then open **Actions > Update social embeds > Run
+   workflow** to verify the first live update. Missing/expired credentials mark the
+   run as failed, retain the affected page's saved embeds, and still publish any
+   successful source updates. Enable GitHub failed-workflow notifications.
+
+The API version defaults to `v25.0`; override with the Actions variable
+`INSTAGRAM_API_VERSION` when upgrading Meta versions. Tokens must be renewed or
+replaced before expiration; the workflow does not store or refresh tokens.
+Never put tokens in HTML, source files, or chat. No credentials are sent to site
+visitors. Existing embeds remain visible during API outages.
+
+API setup references: [YouTube uploads API](https://developers.google.com/youtube/data/reference/rest/v3/playlistItems),
+[Meta's Instagram API documentation](https://www.postman.com/meta/instagram/documentation/6yqw8pt/instagram-api).
+
+Local checks: `python -m unittest discover -s scripts -p "test_*.py"`.
+To sync locally, supply the same environment variables and run
+`python scripts/sync_social.py`.
+
+For automatic social updates, publish this folder at the repository root and use
+the GitHub Actions Pages source described above. For a custom domain, set it in
+Pages and configure your domain's DNS records; the workflow retains `CNAME`.
 
 The character illustration is provided by the user and remains their material. Google Fonts are optional; fallback fonts are included.

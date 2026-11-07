@@ -1,0 +1,66 @@
+import re
+import tempfile
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+
+import sync_social as sync
+
+
+class SocialSyncTests(unittest.TestCase):
+    def test_instagram_preserves_archive_batches_and_layout(self):
+        page = (sync.ROOT / 'art.html').read_text(encoding='utf-8')
+        saved = re.findall(r'data-instgrm-permalink="([^"]+)"', page)
+        new = 'https://www.instagram.com/p/NEW_POST/'
+        result = sync.render_instagram(page, [new, saved[0], new])
+        links = re.findall(r'data-instgrm-permalink="([^"]+)"', result)
+        self.assertEqual(links, [new] + saved)
+        gallery = result.split('id="artwork-gallery">')[1].split('</div>')[0]
+        self.assertEqual(gallery.count('class="card instagram-card"'), 6)
+        self.assertEqual(result.split('id="artwork-gallery">')[0], page.split('id="artwork-gallery">')[0])
+        self.assertEqual(result.split('</template>')[1], page.split('</template>')[1])
+        self.assertEqual(sync.render_instagram(result, [new, saved[0]]), result)
+
+    def test_youtube_escapes_titles_and_preserves_player_options(self):
+        page = (sync.ROOT / 'gospel.html').read_text(encoding='utf-8')
+        videos = [{'id': 'abcdefghijk', 'snippet': {'title': 'A < B & "C"'}}]
+        result = sync.render_youtube(page, videos)
+        self.assertIn('A &lt; B &amp; &quot;C&quot;', result)
+        self.assertEqual(result.count('class="gospel-video"'), 1)
+        self.assertIn('allowfullscreen', result)
+        self.assertIn('aspect-ratio:16/9', result)
+        self.assertIn('/embed/abcdefghijk', result)
+        self.assertEqual(sync.render_youtube(result, videos), result)
+
+    def test_youtube_api_filters_unavailable_videos(self):
+        responses = [
+            {'items': [{'contentDetails': {'relatedPlaylists': {'uploads': 'playlist'}}}]},
+            {'items': [{'snippet': {'resourceId': {'videoId': v}}} for v in ['private', 'blocked', 'public']]},
+            {'items': [
+                {'id': 'private', 'status': {'privacyStatus': 'private', 'embeddable': True}},
+                {'id': 'blocked', 'status': {'privacyStatus': 'public', 'embeddable': False}},
+                {'id': 'public', 'status': {'privacyStatus': 'public', 'embeddable': True}},
+            ]},
+        ]
+        with patch.dict('os.environ', {'YOUTUBE_API_KEY': 'test'}), patch.object(sync, 'api', side_effect=responses):
+            self.assertEqual([v['id'] for v in sync.youtube()], ['public'])
+
+    def test_failed_source_keeps_saved_content_and_other_source_updates(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for filename in ['art.html', 'gospel.html']:
+                (root / filename).write_bytes((sync.ROOT / filename).read_bytes())
+            original = (root / 'gospel.html').read_bytes()
+            with patch.object(sync, 'ROOT', root), patch.object(sync, 'youtube', side_effect=TimeoutError), patch.object(sync, 'instagram', return_value=['https://www.instagram.com/p/NEW_POST/']):
+                self.assertTrue(sync.main())
+            self.assertEqual((root / 'gospel.html').read_bytes(), original)
+            self.assertIn('NEW_POST', (root / 'art.html').read_text(encoding='utf-8'))
+
+    def test_empty_feeds_do_not_replace_saved_embeds(self):
+        for filename, render in [('art.html', sync.render_instagram), ('gospel.html', sync.render_youtube)]:
+            with self.assertRaises(ValueError):
+                render((sync.ROOT / filename).read_text(encoding='utf-8'), [])
+
+
+if __name__ == '__main__':
+    unittest.main()
